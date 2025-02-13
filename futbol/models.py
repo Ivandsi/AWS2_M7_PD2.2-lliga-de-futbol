@@ -13,7 +13,8 @@ class Equip(models.Model):
     nom = models.CharField(max_length=100, unique=True)
     lliga = models.ForeignKey(Lliga, on_delete=models.CASCADE, related_name="equips")
     any_fundacio = models.IntegerField()
-    estadi = models.CharField(max_length=100)
+    estadi = models.CharField(max_length=100, null=True, blank=True)
+    ciutat = models.CharField(max_length=100)
 
     def __str__(self):
         return self.nom
@@ -41,11 +42,13 @@ class Partit(models.Model):
     
     def gols_local(self):
         return self.event_set.filter(
-            jugador__equip = self.equip_local
+            jugador__equip = self.equip_local,
+            tipus_esdeveniment = "gol"
             ).count()
     def gols_visitant(self):
         return self.event_set.filter(
-            jugador__equip = self.equip_visitant
+            jugador__equip = self.equip_visitant,
+            tipus_esdeveniment = "gol"
             ).count()
     def __str__(self):
         return f"{self.equip_local} vs {self.equip_visitant}"
