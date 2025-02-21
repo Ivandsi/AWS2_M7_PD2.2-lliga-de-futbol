@@ -21,5 +21,10 @@ from futbol import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('classificacio/', views.classificacio)
+    path("nou_jugador/", views.nou_jugador, name="nou_jugador"),
+    path("menu/", views.menu, name="menu"),
+    path("menu_pichichi/", views.menuPichichi, name="menu_pichichi"),
+    path("classificacio/<int:lliga_id>", views.classificacio, name="classificacio"),
+    path("pichichi/<int:lliga_id>", views.pichichi, name="pichichi"),
+    path("taula_partits/", views.taulaPartits, name="taula_partits")
 ]

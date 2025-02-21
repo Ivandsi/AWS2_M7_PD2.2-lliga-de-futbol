@@ -1,0 +1,20 @@
+<h1>Mejores jugador:</h1>
+<h1>{{lliga_nom}}</h1>
+<table border="1" >
+    <thead>
+        <tr align="center">
+            <th>Posició</th>
+            <th>Nom</th>
+            <th>Gols marcats</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for jugador in classificacio %}
+        <tr align="center">
+            <td>{{forloop.counter}}º</td>
+            <td>{{jugador.nom}}</td>
+            <td>{{jugador.gols}}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

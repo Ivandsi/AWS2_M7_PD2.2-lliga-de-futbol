@@ -1,10 +1,60 @@
 from django.shortcuts import render
+from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
+from django.db.models import Count
+from django import forms
 
-from futbol.models import Lliga
+ 
+from futbol.models import *
 
 # Create your views here.
-def classificacio(request):
-    lliga = Lliga.objects.first()
+
+class MenuForm(forms.Form):
+    lliga = forms.ModelChoiceField(queryset=Lliga.objects.all())
+    
+class JugadorForm(forms.ModelForm):
+    class Meta:
+        model = Jugador
+        fields = "__all__"
+        
+def nou_jugador(request):
+    form = JugadorForm()
+    if request.method == "POST":
+        form = JugadorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # cridem a /classificacio/<lliga_id>
+            return redirect('nou_jugador')
+    return render(request, "nou_jugador.html", {
+        "form": form
+        })
+ 
+def menu(request):
+    form = MenuForm()
+    if request.method == "POST":
+        form = MenuForm(request.POST)
+        if form.is_valid():
+            lliga = form.cleaned_data.get("lliga")
+            # cridem a /classificacio/<lliga_id>
+            return redirect('classificacio',lliga.id)
+    return render(request, "menu.html",{
+                    "form": form,
+            })
+
+def menuPichichi(request):
+    form = MenuForm()
+    if request.method == "POST":
+        form = MenuForm(request.POST)
+        if form.is_valid():
+            lliga = form.cleaned_data.get("lliga")
+            # cridem a /classificacio/<lliga_id>
+            return redirect('pichichi',lliga.id)
+    return render(request, "menu_pichichi.html",{
+                    "form": form,
+            })
+    
+def classificacio(request, lliga_id):
+    lliga = get_object_or_404( Lliga, pk=lliga_id)
     equips = lliga.equips.all()
     classi = []
      
@@ -56,4 +106,53 @@ def classificacio(request):
                     "classificacio":classi,
                     "lliga_nom": lliga.nom
                 })
+    
+def pichichi(request, lliga_id):
+    lliga = get_object_or_404( Lliga, pk=lliga_id)
+    classi = []
+    
+    # Obtener todos los jugadores de los equipos de la liga
+    jugadors = Jugador.objects.filter(equip__lliga=lliga)
+    
+    for jugador in jugadors:
+        classi.append({
+            "nom": jugador.nom,
+            "gols": jugador.gols_marcats()
+        })
+    
+    classi.sort(key=lambda x: x["gols"], reverse=True)
 
+    # ordenem llista
+    return render(request,"pichichi.html",
+                {
+                    "classificacio":classi,
+                    "lliga_nom": lliga.nom
+                })
+        
+def taulaPartits(request):
+    equips = list(Equip.objects.all())  # Llista ordenada d'equips
+    n = len(equips)
+
+    # Creem una matriu buida de mida n x n amb 'x' en la diagonal
+    resultats = [['' for _ in range(n + 1)] for _ in range(n + 1)]
+
+    # Assignem noms d'equips a la primera fila i columna
+    resultats[0][0] = ""
+    for i in range(n):
+        resultats[i + 1][0] = equips[i].nom
+        resultats[0][i + 1] = equips[i].nom
+        resultats[i + 1][i + 1] = "X"  # Marca la diagonal
+
+    # Omplim la taula amb els resultats dels partits
+    partits = Partit.objects.all()
+    index_map = {equip.id: idx + 1 for idx, equip in enumerate(equips)}
+
+    for partit in partits:
+        i = index_map[partit.equip_local.id]
+        j = index_map[partit.equip_visitant.id]
+        resultat = f"{partit.gols_local()} - {partit.gols_visitant()}"
+        resultats[i][j] = resultat
+        resultat2 = f"{partit.gols_visitant()}-{partit.gols_local()}"
+        resultats[j][i] = resultat2
+    
+    return render(request, 'taula_partits.html', {'resultats': resultats})

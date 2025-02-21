@@ -14,7 +14,10 @@ class PartitAdmin(admin.ModelAdmin):
     search_fields = ("equip_local__nom", "equip_visitant__nom")
     inlines = [EventInline]
 
+class JugadorAdmin(admin.ModelAdmin):
+    search_fields = ("nom",)
+
 admin.site.register(Lliga)
 admin.site.register(Equip)
-admin.site.register(Jugador)
+admin.site.register(Jugador, JugadorAdmin)
 admin.site.register(Partit, PartitAdmin)

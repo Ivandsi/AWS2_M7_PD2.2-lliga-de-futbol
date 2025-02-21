@@ -1,0 +1,13 @@
+table th,
+table td {
+    border-bottom: 1px solid black;
+}
+
+table td {
+    text-align: center;
+}
+
+table tr:first-child th {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
